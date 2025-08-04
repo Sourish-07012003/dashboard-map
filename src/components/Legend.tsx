@@ -1,5 +1,4 @@
 import React from "react";
-import { Card } from "antd";
 import { useStore } from "../store/useStore";
 
 const Legend: React.FC = () => {
@@ -9,25 +8,35 @@ const Legend: React.FC = () => {
     <div
       style={{
         position: "absolute",
-        top: 12,
-        right: 12,
-        zIndex: 1001,
-        width: 260,
-        maxHeight: "70vh",
-        overflowY: "auto",
+        bottom: 16,
+        left: 16,
+        background: "rgba(255,255,255,0.95)",
+        padding: 12,
+        borderRadius: 10,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+        fontSize: 12,
+        maxWidth: 280,
+        zIndex: 1000,
       }}
     >
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>Legend</div>
       {polygons.map((poly) => (
-        <Card
-          size="small"
-          key={poly.id}
-          title={poly.name || poly.id.slice(0, 4)}
-          style={{ marginBottom: 8 }}
-        >
+        <div key={poly.id} style={{ marginBottom: 10 }}>
+          <div style={{ fontWeight: 500 }}>
+            <div>{poly.name}</div>
+            <div style={{ fontSize: 11, color: "#555" }}>
+              {poly.dataSources.join(", ")}
+            </div>
+          </div>
           {poly.rules.map((r) => (
             <div
               key={r.id}
-              style={{ display: "flex", alignItems: "center", marginBottom: 4 }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 4,
+              }}
             >
               <div
                 style={{
@@ -35,23 +44,18 @@ const Legend: React.FC = () => {
                   height: 14,
                   background: r.color,
                   borderRadius: 3,
-                  marginRight: 6,
                   border: "1px solid #ccc",
+                  flexShrink: 0,
                 }}
               />
-              <div style={{ fontSize: 12 }}>
+              <div>
                 {r.operator} {r.value}
               </div>
             </div>
           ))}
-          <div style={{ marginTop: 4, fontSize: 12 }}>
-            Current:{" "}
-            {poly.currentValue !== undefined
-              ? poly.currentValue.toFixed(1)
-              : "—"}
-          </div>
-        </Card>
+        </div>
       ))}
+      {polygons.length === 0 && <div>No polygons to show.</div>}
     </div>
   );
 };
