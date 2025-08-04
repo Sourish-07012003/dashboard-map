@@ -220,11 +220,18 @@ const MapView: React.FC = () => {
   center={mapCenter}
   zoom={5}
   style={{ height: "100%", width: "100%" }}
-  whenReady={(map: L.Map) => {
-    mapRef.current = map;
-    map.setView(mapCenter, 5);
-    map.options.maxZoom = 5;
-    map.options.minZoom = 5;
+  whenReady={() => {
+    const map = mapRef.current;
+    if (map) {
+      map.setView(mapCenter, 5);
+      map.options.maxZoom = 5;
+      map.options.minZoom = 5;
+    }
+  }}
+  ref={(ref) => {
+    if (ref) {
+      mapRef.current = ref;
+    }
   }}
 >
 
