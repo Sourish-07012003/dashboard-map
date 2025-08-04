@@ -1,25 +1,36 @@
 import React from "react";
-import { Card, Select, InputNumber, Button, Space, Tooltip, Input } from "antd";
+import {
+  Card,
+  Select,
+  InputNumber,
+  Button,
+  Space,
+  Tooltip,
+  Input,
+  Tag,
+} from "antd";
 import { useStore } from "../store/useStore";
 import { v4 as uuidv4 } from "uuid";
 
-// Inline rule shape (mirror of store)
-type ColorRule = {
-  id: string;
-  operator: "<" | "<=" | ">" | ">=" | "=";
-  value: number;
-  color: string;
-};
+const availableFields = [
+  { label: "Temperature", value: "temperature_2m" },
+  { label: "Humidity", value: "relativehumidity_2m" },
+  // add more as needed
+];
 
-const defaultRule = (): ColorRule => ({
+const defaultRule = () => ({
   id: uuidv4(),
-  operator: "<",
+  operator: "<" as const,
   value: 10,
   color: "#ff4d4f",
 });
 
 const Sidebar: React.FC = () => {
-  const { polygons, updatePolygon } = useStore();
+  const {
+    polygons,
+    updatePolygon,
+    removePolygon,
+  } = useStore();
 
   return (
     <div
@@ -51,37 +62,50 @@ const Sidebar: React.FC = () => {
                 }
                 style={{ width: "60%" }}
                 placeholder="Polygon name"
-              />
-              <Button
-                size="small"
-                onClick={() => {
-                  updatePolygon(poly.id, {
-                    rules: [...poly.rules, defaultRule()],
-                  });
+                onBlur={() => {
+                  if (!poly.name || !poly.name.trim()) {
+                    updatePolygon(poly.id, { name: "Unnamed Region" });
+                  }
                 }}
-              >
-                + Rule
-              </Button>
+              />
+              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    updatePolygon(poly.id, {
+                      rules: [...poly.rules, defaultRule()],
+                    });
+                  }}
+                >
+                  + Rule
+                </Button>
+                <Tooltip title="Delete polygon">
+                  <Button
+                    size="small"
+                    danger
+                    onClick={() => removePolygon(poly.id)}
+                  >
+                    ✕
+                  </Button>
+                </Tooltip>
+              </div>
             </div>
           }
         >
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontWeight: 600 }}>Data Source / Field</div>
+            <div style={{ fontWeight: 600 }}>Data Source(s)</div>
             <Select
+              mode="multiple"
               style={{ width: "100%" }}
-              value={poly.dataSource}
-              placeholder="Select data source"
-              onChange={(val) => updatePolygon(poly.id, { dataSource: val })}
-            >
-              <Select.Option value="temperature_2m">Temperature</Select.Option>
-              <Select.Option value="relativehumidity_2m">
-                Humidity
-              </Select.Option>
-            </Select>
+              placeholder="Select data sources"
+              value={poly.dataSources}
+              options={availableFields}
+              onChange={(val) => updatePolygon(poly.id, { dataSources: val })}
+            />
           </div>
 
           <div style={{ fontWeight: 600, marginBottom: 4 }}>Color Rules</div>
-          {poly.rules.map((rule: any, idx: number) => (
+          {poly.rules.map((rule, idx) => (
             <Space key={rule.id} style={{ display: "flex", marginBottom: 4 }}>
               <Select
                 value={rule.operator}
@@ -128,9 +152,7 @@ const Sidebar: React.FC = () => {
                 <Button
                   type="text"
                   onClick={() => {
-                    const updated = poly.rules.filter(
-                      (r: any) => r.id !== rule.id
-                    );
+                    const updated = poly.rules.filter((r) => r.id !== rule.id);
                     updatePolygon(poly.id, { rules: updated });
                   }}
                 >
@@ -149,9 +171,9 @@ const Sidebar: React.FC = () => {
                   : "—"}
               </strong>
             </div>
-            <div>
-              Current color:{" "}
-              <span
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div>Current color:</div>
+              <div
                 style={{
                   display: "inline-block",
                   width: 16,
@@ -160,8 +182,13 @@ const Sidebar: React.FC = () => {
                   borderRadius: 4,
                   verticalAlign: "middle",
                   marginLeft: 4,
+                  border: "1px solid #999",
                 }}
               />
+              {poly.status === "loading" && <Tag color="blue">Loading</Tag>}
+              {poly.status === "error" && (
+                <Tag color="red">{poly.errorMsg || "Error"}</Tag>
+              )}
             </div>
           </div>
         </Card>
