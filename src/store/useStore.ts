@@ -14,10 +14,12 @@ export interface PolygonData {
   id: string;
   name?: string;
   coordinates: [number, number][];
-  dataSource?: string;
+  dataSources: string[]; // allows multiple datasets
   rules: ColorRule[];
   currentValue?: number;
   color?: string;
+  status?: "loading" | "error" | "ready";
+  errorMsg?: string;
 }
 
 interface AppState {
@@ -25,7 +27,10 @@ interface AppState {
   selectedTimeRange: [number, number];
   setTimeRange: (range: [number, number]) => void;
   addPolygon: (polygon: PolygonData) => void;
-  updatePolygon: (id: string, updates: Partial<Omit<PolygonData, "id">>) => void;
+  updatePolygon: (
+    id: string,
+    updates: Partial<Omit<PolygonData, "id">>
+  ) => void;
   removePolygon: (id: string) => void;
   setPolygonColor: (id: string, color: string) => void;
 }
