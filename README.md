@@ -1,69 +1,99 @@
-# React + TypeScript + Vite
+# 🗺️ Interactive Polygon-Based Data Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + Leaflet-based web application that allows users to draw, edit, and analyze polygons on a map with associated dataset visualization and time filtering.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Live Deployment
 
-## Expanding the ESLint configuration
+**🔗 [Live Demo](https://dashboard-mapp.vercel.app/)**  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📂 GitHub Repository
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+**🔗 [GitHub Repo](https://github.com/Sourish-07012003/dashboard-map)**  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🛠️ Setup and Run Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Sourish-07012003/dashboard-map.git
+cd dashboard-map
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 3. Run the development server
+
+```bash
+npm run dev
+```
+
+### 4. Build for production
+
+```bash
+npm run build
+```
+
+---
+
+## 📦 Summary of Libraries Used
+
+| Library                 | Purpose                                                                 |
+|-------------------------|-------------------------------------------------------------------------|
+| `react-leaflet`         | Map rendering and interaction                                           |
+| `leaflet-draw`          | Polygon drawing and editing tools                                       |
+| `antd`                  | UI components and layout                                                |
+| `zustand`               | Lightweight state management                                            |
+| `axios`                 | API requests                                                            |
+| `dayjs`                 | Time formatting                                                         |
+| `uuid`                  | Unique polygon ID generation                                            |
+| `vite`                  | Development and bundling                                                |
+| `typescript`            | Type-safe development                                                   |
+
+---
+
+## ✅ Features Implemented
+
+### ✅ Step 1: Time Range Slider
+- Range-based slider with hour selection.
+- Caches API responses for performance.
+- Persists selected range in session.
+
+### ✅ Step 2 & 3: Polygon Drawing & Management
+- Users can draw, edit, and rename polygons.
+- Persistent polygon data across reloads.
+- Edit and remove polygons with proper validation.
+- Feature limits (min 3, max 12 points) enforced.
+
+### ✅ Step 4: Data Visualization
+- Polygons colored based on active rule threshold.
+- Interactive legend and field selection.
+- Dataset comparison & multi-field selection supported.
+
+### ✅ Bonus Enhancements
+- Tooltip info on hover.
+- Polygon rename/edit/delete UX improved.
+- Local storage caching.
+- Smooth color transitions (optional).
+- Basic error handling on API/data fetch failure.
+
+---
+
+## 💡 Design / Development Remarks
+
+- **Polygon Matching:** Uses stable IDs for syncing edits.
+- **UI/UX Enhancements:** Refined with `antd`, ensuring consistent experience.
+- **Performance:** Uses memoization & localStorage caching for data fetches.
+- **Extendability:** Designed to support additional datasets and rule types easily.
+
+---
+Made By Sourish Panja
