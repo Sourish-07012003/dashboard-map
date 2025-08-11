@@ -5,7 +5,8 @@ import {
   Polygon,
   Tooltip,
 } from "react-leaflet";
-import L from "leaflet";
+import L, { Map as LeafletMap } from "leaflet"; // ✅ Import Map type
+
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import "leaflet-draw";
@@ -19,8 +20,7 @@ import Legend from "./Legend";
 // Fix default icon paths for bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url)
-    .href,
+  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url).href,
   iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
   shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url).href,
 });
@@ -41,12 +41,7 @@ const lerpColor = (a: string, b: string, amount: number) => {
   const gg = Math.round(ag + (bg - ag) * amount);
   const bb2 = Math.round(ab + (bb - ab) * amount);
 
-  return (
-    "#" +
-    ((1 << 24) + (rr << 16) + (gg << 8) + bb2)
-      .toString(16)
-      .slice(1)
-  );
+  return "#" + ((1 << 24) + (rr << 16) + (gg << 8) + bb2).toString(16).slice(1);
 };
 
 // animate color change
@@ -71,12 +66,11 @@ const MapView: React.FC = () => {
     selectedTimeRange,
   } = useStore();
 
-  const mapRef = useRef<L.Map | null>(null);
-  const layerMap = useRef<Map<number, string>>(new Map()); // leaflet layer id -> poly id
+  const mapRef = useRef<LeafletMap | null>(null); // ✅ Typed ref
+  const layerMap = useRef<Map<number, string>>(new Map());
   const initializedRef = useRef(false);
   const mapCenter: [number, number] = [20, 78];
 
-  // Refresh logic: supports multiple dataSources
   const refreshPolygon = async (poly: typeof polygons[number]) => {
     if (!poly.dataSources || poly.dataSources.length === 0) return;
     updatePolygon(poly.id, { status: "loading" });
@@ -87,23 +81,17 @@ const MapView: React.FC = () => {
     const end = now.add(selectedTimeRange[1], "hour");
 
     try {
-      // fetch each source in parallel
       const allData = await Promise.all(
         poly.dataSources.map((ds) =>
-          fetchDataFields(lat, lon, start.toISOString(), end.toISOString(), [
-            ds,
-          ])
+          fetchDataFields(lat, lon, start.toISOString(), end.toISOString(), [ds])
         )
       );
+
       if (!allData.length) {
-        updatePolygon(poly.id, {
-          status: "error",
-          errorMsg: "No data returned",
-        });
+        updatePolygon(poly.id, { status: "error", errorMsg: "No data returned" });
         return;
       }
 
-      // assume same time array
       const timeArr: string[] = allData[0].hourly.time || [];
       const perHour = timeArr.map((t: string, i: number) => {
         const vals = allData.map(
@@ -127,26 +115,15 @@ const MapView: React.FC = () => {
         return;
       }
 
-      const avg =
-        selected.reduce((sum, p) => sum + p.val, 0) / selected.length;
-
+      const avg = selected.reduce((sum, p) => sum + p.val, 0) / selected.length;
       const matchedColor = evaluateColorRules(avg, poly.rules);
 
-      // animate color if changed
       if (poly.color && matchedColor && poly.color !== matchedColor) {
         animateColor(poly.id, poly.color, matchedColor);
       } else if (matchedColor) {
-        updatePolygon(poly.id, {
-          currentValue: avg,
-          color: matchedColor,
-          status: "ready",
-        });
+        updatePolygon(poly.id, { currentValue: avg, color: matchedColor, status: "ready" });
       } else {
-        updatePolygon(poly.id, {
-          currentValue: avg,
-          color: undefined,
-          status: "ready",
-        });
+        updatePolygon(poly.id, { currentValue: avg, color: undefined, status: "ready" });
       }
     } catch (err) {
       updatePolygon(poly.id, {
@@ -156,21 +133,17 @@ const MapView: React.FC = () => {
     }
   };
 
-  // Trigger refresh on timeline / rules / datasource changes
   useEffect(() => {
     polygons.forEach((p) => refreshPolygon(p));
-    // eslint-disable-next-line
   }, [selectedTimeRange]);
 
   useEffect(() => {
     polygons.forEach((p) => refreshPolygon(p));
-    // eslint-disable-next-line
   }, [
     polygons.map((p) => JSON.stringify(p.rules)).join("|"),
     polygons.map((p) => p.dataSources.join(",")).join("|"),
   ]);
 
-  // Setup draw control once
   useEffect(() => {
     const map = mapRef.current;
     if (!map || initializedRef.current) return;
@@ -191,9 +164,7 @@ const MapView: React.FC = () => {
           shapeOptions: { color: "#3388ff" },
         },
       },
-      edit: {
-        featureGroup: featureGroup,
-      },
+      edit: { featureGroup },
     });
     map.addControl(drawControl);
 
@@ -218,18 +189,8 @@ const MapView: React.FC = () => {
         coordinates,
         dataSources: ["temperature_2m"],
         rules: [
-          {
-            id: uuidv4(),
-            operator: "<" as const,
-            value: 10,
-            color: "#ff4d4f",
-          },
-          {
-            id: uuidv4(),
-            operator: ">=" as const,
-            value: 25,
-            color: "#52c41a",
-          },
+          { id: uuidv4(), operator: "<" as const, value: 10, color: "#ff4d4f" },
+          { id: uuidv4(), operator: ">=" as const, value: 25, color: "#52c41a" },
         ],
         currentValue: undefined,
         color: undefined,
@@ -237,7 +198,6 @@ const MapView: React.FC = () => {
       };
       addPolygon(newPoly);
 
-      // map layer to polygon
       const lid = (layer as any)?._leaflet_id;
       if (typeof lid === "number") {
         layerMap.current.set(lid, newPoly.id);
@@ -252,9 +212,7 @@ const MapView: React.FC = () => {
           if (!matchedId) return;
 
           const latlngs = (layer.getLatLngs() as any)[0] as L.LatLng[];
-          if (latlngs.length < 3 || latlngs.length > 12) {
-            return;
-          }
+          if (latlngs.length < 3 || latlngs.length > 12) return;
           const coordinates = latlngs.map((l: L.LatLng) => [l.lat, l.lng] as [number, number]);
           updatePolygon(matchedId, { coordinates });
         }
@@ -284,7 +242,6 @@ const MapView: React.FC = () => {
       map.removeControl(drawControl);
       featureGroup.remove();
     };
-    // eslint-disable-next-line
   }, [mapRef.current]);
 
   return (
@@ -293,14 +250,7 @@ const MapView: React.FC = () => {
         center={mapCenter}
         zoom={5}
         style={{ height: "100%", width: "100%" }}
-        whenReady={() => {
-          const map = mapRef.current;
-          if (map) {
-            map.setView(mapCenter, 5);
-            map.options.maxZoom = 5;
-            map.options.minZoom = 5;
-          }
-        }}
+        ref={mapRef} // ✅ Use ref instead of whenCreated
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
@@ -319,9 +269,7 @@ const MapView: React.FC = () => {
           >
             <Tooltip direction="top" sticky>
               <div style={{ fontSize: 12 }}>
-                <div>
-                  <strong>{poly.name}</strong>
-                </div>
+                <div><strong>{poly.name}</strong></div>
                 <div>Field(s): {poly.dataSources.join(", ")}</div>
                 <div>
                   Value:{" "}
